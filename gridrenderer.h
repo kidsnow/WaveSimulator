@@ -9,11 +9,17 @@ class GridRenderer : public QOpenGLWidget,
                      protected QOpenGLFunctions
 {
 public:
-    GridRenderer(QWidget *parent);
+    GridRenderer(QWidget *parent = 0);
+    QSize minimumSizeHint() const override;
+    QSize sizeHint() const override;
 
+protected:
     void initializeGL() override;
-    void resizeGL(int w, int h) override;
     void paintGL() override;
+    void resizeGL(int w, int h) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+
 
 private:
     GLuint m_posAttr;

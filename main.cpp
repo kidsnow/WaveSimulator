@@ -18,10 +18,13 @@ int main(int argc, char *argv[])
     QHBoxLayout *contentLayout = new QHBoxLayout;
     contentLayout->addWidget(button1);
     contentLayout->addWidget(button2);
-    GridRenderer *renderer = new GridRenderer();
-    contentLayout->addWidget(renderer);
 
-    mainLayout->addLayout(contentLayout, 0, 1);
+    QVBoxLayout *rendererLayout = new QVBoxLayout();
+    GridRenderer *renderer = new GridRenderer();
+    rendererLayout->addWidget(renderer);
+
+    mainLayout->addLayout(contentLayout, 0, 2);
+    mainLayout->addLayout(rendererLayout, 0, 1);
 
     window.show();
 
