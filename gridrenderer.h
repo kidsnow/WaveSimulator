@@ -2,11 +2,12 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 
 class QOpenGLShaderProgram;
 
 class GridRenderer : public QOpenGLWidget,
-                     protected QOpenGLFunctions
+                     protected QOpenGLExtraFunctions
 {
 public:
     GridRenderer(QWidget *parent = 0);
