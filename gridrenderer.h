@@ -1,10 +1,9 @@
 #pragma once
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions>
 #include <QOpenGLExtraFunctions>
 
-class QOpenGLShaderProgram;
+class GLShader;
 
 class GridRenderer : public QOpenGLWidget,
                      protected QOpenGLExtraFunctions
@@ -23,10 +22,7 @@ protected:
 
 
 private:
-    GLuint m_posAttr;
-    GLuint m_colAttr;
-    GLuint m_matrixUniform;
-
-    QOpenGLShaderProgram *m_program;
-    int m_frame;
+    GLuint m_triangleVAO;
+    GLuint m_triangleVBO;
+    GLShader *m_shader;
 };
