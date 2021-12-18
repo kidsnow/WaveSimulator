@@ -1,4 +1,4 @@
-#include "WaveSimulator.h"
+#include "wave_simulator.h"
 
 
 WaveSimulator::WaveSimulator()
