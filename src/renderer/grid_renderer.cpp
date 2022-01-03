@@ -5,6 +5,8 @@
 
 #include "camera.h"
 #include "shader.h"
+#include "renderable.h"
+#include "../grid.h"
 
 GridRenderer::GridRenderer()
 {
@@ -26,69 +28,46 @@ bool GridRenderer::Initialize()
 	shader_ = new Shader();
 	shader_->CompileRenderingShader("resource/shader/grid_shader.vert", "resource/shader/grid_shader.frag");
 
-	axisPosition_ = new float[18]
-	{
-		0.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f
-	};
-
-	axisColor_ = new float[18]
-	{
-		1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f,
-		0.0f, 0.0f, 1.0f
-	};
-
-	axisIndices_ = new unsigned int[6]
-	{
-		0, 1,
-		2, 3,
-		4, 5
-	};
-
-	glGenVertexArrays(1, &vao_);
-	glBindVertexArray(vao_);
-
-	glGenBuffers(3, vbo_);
-	{
-		glGenBuffers(1, &vbo_[0]);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_[0]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * 6, axisPosition_, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glEnableVertexAttribArray(0);
-	}
-
-	{
-		GLuint vbo;
-		glGenBuffers(1, &vbo_[1]);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_[1]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * 6, axisColor_, GL_STATIC_DRAW);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glEnableVertexAttribArray(1);
-	}
-
-	{
-		GLuint vbo;
-		glGenBuffers(1, &vbo_[2]);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_[2]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 6, axisIndices_, GL_STATIC_DRAW);
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	registerAxis();
 
 	return true;
 }
 
-void GridRenderer::Render(Camera* camera, Grid* grid)
+void GridRenderer::registerAxis()
+{
+	Axis axis;
+
+	Renderable* axisRenderable = new Renderable();
+	
+	axisRenderable->SetPrimitiveType(PrimitiveType::Lines);
+	axisRenderable->UpdateVBO(VBOType::Position, 6, 3 * sizeof(float), axis.axisPosition_);
+	axisRenderable->UpdateVBO(VBOType::Color, 6, 3 * sizeof(float), axis.axisColor_);
+	axisRenderable->UpdateVBO(VBOType::Index, 6, sizeof(unsigned int), axis.axisIndices_);
+
+	renderables_.push_back(axisRenderable);
+}
+
+void GridRenderer::RegisterGrid(Grid* grid)
+{
+	for (int i = 0; i < grid->GetBufferCount(); i++)
+	{
+		generateRenderableFromGridBuffer(
+			grid->GetGridSize(),
+			grid->GetBufferAt(i)
+		);
+	}
+}
+
+void GridRenderer::generateRenderableFromGridBuffer(int gridSize, GridBuffer* gridBuffer)
+{
+	Renderable* gridRenderable = new Renderable();
+
+	gridRenderable->SetPrimitiveType(PrimitiveType::Lines);
+	int elementCount = gridSize * (gridSize + 2);
+
+}
+
+void GridRenderer::Render(Camera* camera)
 {
 	shader_->Use();
 
@@ -97,11 +76,15 @@ void GridRenderer::Render(Camera* camera, Grid* grid)
 	
 	shader_->SetMatrix4("viewProjection", projMat * viewMat);
 
-	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glClearColor(0.4f, 0.4f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glBindVertexArray(vao_);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_[2]);
-
-	glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, 0);
+	for (auto renderable : renderables_)
+	{
+		renderable->Bind();
+		glDrawElements(
+			renderable->GetPrimitiveTypeInGLEnum(),
+			renderable->GetElementCount(),
+			GL_UNSIGNED_INT, 0);
+	}
 }

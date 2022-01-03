@@ -2,6 +2,7 @@
 
 class Camera;
 class GLFWwindow;
+class Grid;
 class GridRenderer;
 
 class Application
@@ -24,5 +25,6 @@ private:
 	double xposPrev_, yposPrev_;
 	Camera* camera_;
 	GLFWwindow* window_;
+	Grid* grid_;
 	GridRenderer* renderer_;
 };

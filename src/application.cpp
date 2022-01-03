@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "camera.h"
+#include "grid.h"
 #include "renderer/grid_renderer.h"
 
 
@@ -66,6 +67,10 @@ bool Application::Initialize()
 	camera_->SetProjectionMode(CameraProjectionMode::Perspective);
 	camera_->SetFrustum(glm::vec2(4.f, 3.f), 1.f, 10.f);
 
+	grid_ = new Grid(64, 1.0f);
+
+	delete grid_;
+
 	return true;
 }
 
@@ -96,17 +101,17 @@ void Application::cursorPositionCallback(GLFWwindow* window, double xpos, double
 
 	if (leftBtnPressed)
 	{
-		printf("xDiff: %f\nyDiff: %f\n", xDiff, yDiff);
+		//printf("xDiff: %f\nyDiff: %f\n", xDiff, yDiff);
 		app->camera_->Rotate(glm::radians(-xDiff*0.5), glm::vec3(0.0f, 0.0f, 1.0f));
 		app->camera_->Rotate(glm::radians(-yDiff*0.5), glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 	if (rightBtnPressed)
 	{
-		printf("RIGHT:\t%f\t%f\n", xpos, ypos);
+		//printf("RIGHT:\t%f\t%f\n", xpos, ypos);
 	}
 	if (middleBtnPressed)
 	{
-		printf("MIDDLE:\t%f\t%f\n", xpos, ypos);
+		//printf("MIDDLE:\t%f\t%f\n", xpos, ypos);
 	}
 
 	app->xposPrev_ = xpos;
@@ -134,7 +139,7 @@ void Application::Run()
 {
 	while (!glfwWindowShouldClose(window_))
 	{
-		renderer_->Render(camera_, nullptr);
+		renderer_->Render(camera_);
 		glfwSwapBuffers(window_);
 		glfwPollEvents();
 	}

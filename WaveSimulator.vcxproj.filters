@@ -41,6 +41,9 @@
     <ClCompile Include="src\wave_simulator.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\renderer\renderable.cpp">
+      <Filter>src\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\renderer\grid_renderer.h">
@@ -60,6 +63,9 @@
     </ClInclude>
     <ClInclude Include="src\wave_simulator.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\renderer\renderable.h">
+      <Filter>src\renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
