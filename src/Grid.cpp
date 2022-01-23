@@ -1,8 +1,7 @@
 #include "grid.h"
 
 
-GridBuffer::GridBuffer(int gridSize, float gridLength) :
-	renderBufferPointer_(nullptr)
+GridBuffer::GridBuffer(int gridSize, float gridLength)
 {
 	/*
 	 * gridSize * gridSize 크기로 보여지는 grid를 생성할텐데
@@ -48,10 +47,6 @@ GridBuffer::GridBuffer(int gridSize, float gridLength) :
 			elements_[index].y = i * elementLength;
 		}
 	}
-
-	// Rendering을 위한 buffer pointer는 simulation 계산을 위한 buffer pointer와 위치가 다름.
-	renderBufferPointer_ = elements_.data();
-	renderBufferPointer_ += gridSize;
 }
 
 GridBuffer::~GridBuffer()
@@ -61,11 +56,6 @@ GridBuffer::~GridBuffer()
 void* GridBuffer::GetBufferPointer()
 {
 	return elements_.data();
-}
-
-void* GridBuffer::GetRenderBufferPointer()
-{
-	return renderBufferPointer_;
 }
 
 Grid::Grid(int gridSize, float gridLength) :

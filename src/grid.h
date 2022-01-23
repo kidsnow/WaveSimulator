@@ -18,11 +18,9 @@ public:
 
 public:
 	void* GetBufferPointer();
-	void* GetRenderBufferPointer();
 
 private:
 	std::vector<GridElement> elements_;
-	GridElement* renderBufferPointer_;
 };
 
 class Grid

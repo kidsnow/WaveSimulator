@@ -36,6 +36,5 @@ private:
 	Grid* grid_;
 	GridRenderer* renderer_;
 	Renderable* axisRenderable_;
-	Renderable* dummyGridRenderable_;
 	std::vector<Renderable*> gridRenderables_;
 };
