@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "grid.h"
 #include "renderer/grid_renderer.h"
+#include "renderer/renderable.h"
 
 
 Application::Application() :
@@ -13,7 +14,9 @@ Application::Application() :
 	renderer_(nullptr),
 	camera_(nullptr),
 	xposPrev_(0.0),
-	yposPrev_(0.0)
+	yposPrev_(0.0),
+	grid_(nullptr),
+	axisRenderable_(nullptr)
 {
 }
 
@@ -67,11 +70,165 @@ bool Application::Initialize()
 	camera_->SetProjectionMode(CameraProjectionMode::Perspective);
 	camera_->SetFrustum(glm::vec2(4.f, 3.f), 1.f, 10.f);
 
-	grid_ = new Grid(64, 1.0f);
+	generateAxisRenderable();
 
-	delete grid_;
+	grid_ = new Grid(2, 1.0f);
+	generateGridRenderables(grid_);
 
 	return true;
+}
+
+void Application::generateAxisRenderable()
+{
+	float axisPosition[18] = {
+		0.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f
+	};
+
+	float axisColor[18] = {
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f
+	};
+
+	unsigned int axisIndices[6] = {
+		0, 1,
+		2, 3,
+		4, 5
+	};
+
+	axisRenderable_ = new Renderable();
+
+	axisRenderable_->SetPrimitiveType(PrimitiveType::Lines);
+	axisRenderable_->UpdateVBO(VBOType::Position, 6, 3, sizeof(float), axisPosition);
+	axisRenderable_->UpdateVBO(VBOType::Color, 6, 3, sizeof(float), axisColor);
+	axisRenderable_->UpdateVBO(VBOType::Index, 6, 1, sizeof(unsigned int), axisIndices);
+}
+
+void Application::generateGridRenderables(Grid* grid)
+{
+	for (int i = 0; i < grid->GetBufferCount(); i++)
+	{
+		// Position buffer를 중간에서부터 읽어오는 로직 짜야 함.
+		Renderable* gridRenderable = new Renderable();
+		int gridSize = grid->GetGridSize();
+		GridBuffer* gridBuffer = grid->GetBufferAt(i);
+
+		gridRenderable->SetPrimitiveType(PrimitiveType::Lines);
+		gridRenderable->SetColor(glm::vec3(1.0f, 1.0f, 0.2f));
+		int positionElementCount = gridSize * gridSize;
+		int positionElementSize = sizeof(GridElement);
+		gridRenderable->UpdateVBO(
+			VBOType::Position,
+			positionElementCount,
+			4, 4,
+			gridBuffer->GetRenderBufferPointer()
+		);
+
+		// Generate grid index buffer.
+		std::vector<unsigned int> indices;
+		int indexElementCount = 4 * gridSize * (gridSize - 1);
+		int indexElementSize = sizeof(unsigned int);
+		indices.resize(indexElementCount);
+		int counter = 0;
+
+		for (int i = 0; i < gridSize; i++)
+		{
+			for (int j = 0; j < gridSize - 1; j++)
+			{
+				indices.push_back((i + 1) * gridSize + j);
+				indices.push_back((i + 1) * gridSize + j + 1);
+				indices.push_back((j + 1) * gridSize + i);
+				indices.push_back((j + 2) * gridSize + i);
+				counter += 4;
+			}
+		}
+
+		gridRenderable->UpdateVBO(
+			VBOType::Index,
+			indexElementCount,
+			1, indexElementSize,
+			indices.data()
+		);
+
+		gridRenderables_.push_back(gridRenderable);
+	}
+
+	{
+		int gridSize = 10;
+		float gridLength = 1.0f;
+		std::vector<glm::vec4> elements;
+		elements.resize(gridSize * (gridSize + 2));
+
+		for (int i = 0; i < gridSize + 2; i++)
+		{
+			for (int j = 0; j < gridSize; j++)
+			{
+				elements[i * gridSize + j].w = 1.0f;
+			}
+		}
+
+		for (int i = 0; i < gridSize; i++)
+		{
+			elements[i].w = 0.0f;
+			elements[gridSize * (gridSize + 1) + i].w = 0.0f;
+		}
+
+		float elementLength = gridLength / (gridSize - 1);
+		for (int i = 0; i < gridSize; i++)
+		{
+			for (int j = 0; j < gridSize; j++)
+			{
+				int index = gridSize * (i + 1) + j;
+				elements[index].x = j * elementLength;
+				elements[index].y = i * elementLength;
+			}
+		}
+
+		dummyGridRenderable_ = new Renderable();
+		dummyGridRenderable_->SetPrimitiveType(PrimitiveType::Lines);
+		dummyGridRenderable_->SetColor(glm::vec3(1.0f, 1.0f, 0.2f));
+		int positionElementCount = gridSize * (gridSize + 2);
+		int positionElementSize = sizeof(glm::vec4);
+		dummyGridRenderable_->UpdateVBO(
+			VBOType::Position,
+			positionElementCount,
+			4, sizeof(float),
+			elements.data()
+		);
+
+		std::vector<unsigned int> indices;
+		int indexElementCount = 4 * gridSize * (gridSize - 1);
+		int indexElementSize = sizeof(unsigned int);
+		indices.resize(indexElementCount);
+		int counter = 0;
+
+		for (int i = 0; i < gridSize; i++)
+		{
+			for (int j = 0; j < gridSize - 1; j++)
+			{
+				indices[counter++] = i * gridSize + j + gridSize;
+				indices[counter++] = i * gridSize + j + 1 + gridSize;
+
+				indices[counter++] = j * gridSize + i + gridSize;
+				indices[counter++] = (j + 1) * gridSize + i + gridSize;
+			}
+		}
+
+		dummyGridRenderable_->UpdateVBO(
+			VBOType::Index,
+			indexElementCount,
+			1, sizeof(unsigned int),
+			indices.data()
+		);
+	}
 }
 
 // Screen 좌측 상단이 원점.
@@ -139,7 +296,12 @@ void Application::Run()
 {
 	while (!glfwWindowShouldClose(window_))
 	{
+		//Renderable* gridRenderable = gridRenderables_[grid_->GetFrontBufferIndex()];
+		//renderer_->RegisterRenderable(gridRenderable);
+		renderer_->RegisterRenderable(dummyGridRenderable_);
+		renderer_->RegisterRenderable(axisRenderable_);
 		renderer_->Render(camera_);
+		renderer_->ClearRenderables();
 		glfwSwapBuffers(window_);
 		glfwPollEvents();
 	}

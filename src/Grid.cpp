@@ -1,7 +1,8 @@
 #include "grid.h"
 
 
-GridBuffer::GridBuffer(int gridSize, float gridLength)
+GridBuffer::GridBuffer(int gridSize, float gridLength) :
+	renderBufferPointer_(nullptr)
 {
 	/*
 	 * gridSize * gridSize 크기로 보여지는 grid를 생성할텐데
@@ -17,10 +18,11 @@ GridBuffer::GridBuffer(int gridSize, float gridLength)
 	 *
 	 * y
 	 * ^
+	 * |(n+2)*n
 	 * |...
-	 * |2n   2n+1 2n+2 2n+3 ...
-	 * |n    n+1  n+2  n+3  ...
-	 * |0    1    2    3    ...
+	 * |2n   2n+1 2n+2 ...
+	 * |n    n+1  n+2  ...
+	 * |0    1    2    ...  n-1
 	 * +---------------------> x
 	 */
 
@@ -35,17 +37,21 @@ GridBuffer::GridBuffer(int gridSize, float gridLength)
 		elements_[gridSize * (gridSize + 1) + i].w = 0.0f;
 	}
 
+	float elementLength = gridLength / (gridSize - 1);
 	// Rendering에 참여하는 element들은 x와 y값이 있어야 한다.
 	for (int i = 0; i < gridSize; i++)
 	{
 		for (int j = 0; j < gridSize; j++)
 		{
 			int index = gridSize * (i + 1) + j;
-			float elementLength = gridLength / gridSize;
 			elements_[index].x = j * elementLength;
 			elements_[index].y = i * elementLength;
 		}
 	}
+
+	// Rendering을 위한 buffer pointer는 simulation 계산을 위한 buffer pointer와 위치가 다름.
+	renderBufferPointer_ = elements_.data();
+	renderBufferPointer_ += gridSize;
 }
 
 GridBuffer::~GridBuffer()
@@ -55,6 +61,11 @@ GridBuffer::~GridBuffer()
 void* GridBuffer::GetBufferPointer()
 {
 	return elements_.data();
+}
+
+void* GridBuffer::GetRenderBufferPointer()
+{
+	return renderBufferPointer_;
 }
 
 Grid::Grid(int gridSize, float gridLength) :
@@ -92,4 +103,9 @@ int Grid::GetBufferCount()
 GridBuffer* Grid::GetBufferAt(int index)
 {
 	return buffers_[index];
+}
+
+int Grid::GetFrontBufferIndex()
+{
+	return frontBufferIndex_;
 }

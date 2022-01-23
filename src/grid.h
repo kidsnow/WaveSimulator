@@ -18,9 +18,11 @@ public:
 
 public:
 	void* GetBufferPointer();
+	void* GetRenderBufferPointer();
 
 private:
 	std::vector<GridElement> elements_;
+	GridElement* renderBufferPointer_;
 };
 
 class Grid
@@ -34,6 +36,7 @@ public:
 	float GetGridLength();
 	int GetBufferCount();
 	GridBuffer* GetBufferAt(int index);
+	int GetFrontBufferIndex();
 
 private:
 	int gridSize_;
