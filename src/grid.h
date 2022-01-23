@@ -35,6 +35,7 @@ public:
 	int GetBufferCount();
 	GridBuffer* GetBufferAt(int index);
 	int GetFrontBufferIndex();
+	void SetFrontBufferIndex(int index);
 
 private:
 	int gridSize_;

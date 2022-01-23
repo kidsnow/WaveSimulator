@@ -99,3 +99,8 @@ int Grid::GetFrontBufferIndex()
 {
 	return frontBufferIndex_;
 }
+
+void Grid::SetFrontBufferIndex(int index)
+{
+	frontBufferIndex_ = index;
+}

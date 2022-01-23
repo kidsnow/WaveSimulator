@@ -7,6 +7,7 @@
 #include "grid.h"
 #include "renderer/grid_renderer.h"
 #include "renderer/renderable.h"
+#include "wave_simulator.h"
 
 
 Application::Application() :
@@ -16,7 +17,8 @@ Application::Application() :
 	xposPrev_(0.0),
 	yposPrev_(0.0),
 	grid_(nullptr),
-	axisRenderable_(nullptr)
+	axisRenderable_(nullptr),
+	waveSimulator_(nullptr)
 {
 }
 
@@ -74,6 +76,8 @@ bool Application::Initialize()
 
 	grid_ = new Grid(10, 1.0f);
 	generateGridRenderables(grid_);
+
+	waveSimulator_ = new WaveSimulator(grid_);
 
 	return true;
 }
@@ -224,6 +228,7 @@ void Application::Run()
 {
 	while (!glfwWindowShouldClose(window_))
 	{
+		waveSimulator_->Step();
 		Renderable* gridRenderable = gridRenderables_[grid_->GetFrontBufferIndex()];
 		renderer_->RegisterRenderable(gridRenderable);
 		renderer_->RegisterRenderable(axisRenderable_);

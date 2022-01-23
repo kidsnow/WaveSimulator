@@ -8,6 +8,7 @@ class GLFWwindow;
 class Grid;
 class GridRenderer;
 class Renderable;
+class WaveSimulator;
 
 class Application
 {
@@ -37,4 +38,5 @@ private:
 	GridRenderer* renderer_;
 	Renderable* axisRenderable_;
 	std::vector<Renderable*> gridRenderables_;
+	WaveSimulator* waveSimulator_;
 };
